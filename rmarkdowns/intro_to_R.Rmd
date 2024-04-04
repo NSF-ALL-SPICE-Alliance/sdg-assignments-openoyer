@@ -105,8 +105,16 @@ my_age # run the name of your variable to see the output
 my_age + 5 # how old will you be in 5 years?
 ```
 
+
 #### <span style="color: red;">Challenge 1</span>
 Create a my_name variable with your name assigned to the variable instead of "Victoria DelaCruz". Then, create a my_age variable with your age. 
+
+```{r}
+my_name<-"Olivia Penoyer"
+my_age=19
+my_age+5
+```
+
 
 #### Different Types of Data
 
@@ -189,6 +197,14 @@ library(here) # allows us to cut out long file paths, ensures reproducibility
 library(janitor) # helps us clean column names
 ```
 
+```{r}
+install.packages("here")
+```
+```{r}
+install.packages("janitor")
+```
+
+
 Note: **You will most likely get an error.** If you get an error about not having these packages installed, run the install.packages("packagename") code in the console. We went over this on line 48 under the *Installing a Package* header
 
 Example of this kind of error pictured here:
@@ -202,7 +218,7 @@ In the code chunk below, we use the `read_csv()` function to read in the csv fil
   
     - This also **ensures reproducibility** because as long as we share R projects on github, our project directories will always be the same
 ```{r, message=FALSE}
-sdr_data <- read_csv(here("data/SDR-2023-Data.csv")) # assigning the dataset to a variable so that we can look at/reference it
+sdr_data <- read.csv(here("data/SDR-2023-Data.csv")) # assigning the dataset to a variable so that we can look at/reference it
 # to view the whole dataset you can click on sdr_data in your environment pane at the top right of your screen)
 ```
 Cleaning names
@@ -242,6 +258,11 @@ dim(sdr_data) # looking at dimensions
 - How many NA values are there in the dataset?
 
 NA values represent missing values in our data. It's important to know how many NA values are in your data to better understand how to clean and prepare your data for analysis. Let's load the `naniar` package as we'll be using the function `miss_var_summary()` to see our NA values. 
+
+```{r}
+install.packages("naniar")
+```
+
 
 ```{r}
 library(naniar) # helpful package to view missing data
@@ -294,6 +315,13 @@ What if we want to subset specific rows? We can do this by using the filter func
 #### <span style="color: red;">Challenge 2</span>
 Using the `select()` function, select two new SDG goal scores. Assign it to a variable named `SDG_scores`. 
 
+```{r}
+SDG_scores<-
+sdr_data%>%
+  select(goal_7_score, goal_8_score)
+```
+
+
 *2. filter()*
 
 Similarly to select, `filter()` can be used to extract specific rows. Let's try this out by filtering our data for those within the Oceania region.
@@ -313,6 +341,13 @@ Notes:
 
 #### <span style="color: red;">Challenge 3</span>
 Using the `filter()` function, filter for another region other than Oceania. Assign it to a variable named `new_region`. 
+
+```{r}
+new_region<-
+sdr_data%>%
+  filter(regions_used_for_the_sdr=="East & South Asia")
+```
+
 
 **Important**
 
@@ -338,7 +373,7 @@ Now, you will have a dataframe called *oceania_data* in your environment pane (t
 ```{r}
 sdr_data %>% 
   group_by(regions_used_for_the_sdr) %>% 
-  summarise(mean_goal_7_score_by_region = mean(population_using_at_least_basic_drinking_water_services_percent))
+  summarise(mean_goal_7_score_by_region = mean(population_using_at_least_basic_drinking_water_services))
 ```
 
 
@@ -350,7 +385,7 @@ In the pivot_longer function, we input the names of the columns to pivot (in thi
 
 ```{r}
 sdr_data %>% 
-  select(country, population_with_access_to_clean_fuels_and_technology_for_cooking_percent, co2_emissions_from_fuel_combustion_per_total_electricity_output_mt_co2_t_wh, population_with_access_to_electricity_percent, renewable_energy_share_in_total_final_energy_consumption_percent) %>%
+  select(country, population_with_access_to_clean_fuels_and_technology_for_cooking, co_emissions_from_fuel_combustion_per_total_electricity_output_mt_co_t_wh, population_with_access_to_electricity, renewable_energy_share_in_total_final_energy_consumption) %>%
   pivot_longer(cols = -country, names_to = "Indicator") # cols = -country means to pivot every column selected other than country
 ```
 
