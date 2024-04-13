@@ -130,8 +130,15 @@ We can also double-click the boxes in the legend to only view the regions we're 
 Here is the code for a scatter plot you made in the last lesson:
 
 ```{r, warning = FALSE}
-ggplot(data = sdr_data, aes(x= goal_3_score, y = goal_4_score, color = regions_used_for_the_sdr)) +
-  geom_point()
+goal_3_and_4_scatterplot <- ggplot(data = sdr_data, aes(x= goal_3_score, y = goal_4_score, color = regions_used_for_the_sdr)) +
+  geom_point()+
+  theme_minimal()+
+  scale_fill_viridis_d()+
+  labs(title = "Goal 3 and 4 Relation",
+       x = "SDG 3 Score",
+       y = "SDG 4 Score",
+       fill = "Region")
+ggplotly(goal_3_and_4_scatterplot)
 ```
 
 *Edit the code chunk above* that generates the plot to:
@@ -157,6 +164,10 @@ This takes a few fun steps to do
   - Lucky for us the `rnaturalearth` package has this information for us
       
     - We use the ne_countries() function to access the data and we assign it the name *world*
+
+```{r}
+install.packages("rnaturalearthdata")
+```
 
 
 ```{r}
@@ -255,14 +266,14 @@ Awesome! We're ready to make a map
 ```{r}
 mytext <- paste(
     "Country: ", sdr_data_world_joined$country,"<br/>", 
-    "Goal 7 Score: ", round(sdr_data_world_joined$goal_7_score, 2), 
+    "Goal 4 Score: ", round(sdr_data_world_joined$goal_4_score, 2), 
     sep="") %>%
   lapply(htmltools::HTML)
 
 leaflet(sdr_data_world_joined) %>% 
   addTiles()  %>% 
   setView( lat=10, lng=0 , zoom=2) %>%
-  addPolygons(stroke = FALSE, fillOpacity = 0.5, smoothFactor = 0.5, color = ~colorQuantile("YlOrRd", goal_7_score)(goal_7_score), label = mytext)
+  addPolygons(stroke = FALSE, fillOpacity = 0.5, smoothFactor = 0.5, color = ~colorQuantile("RdYlBu", goal_4_score)(goal_4_score), label = mytext)
 ```
 #### <span style="color: red;">Challenge 2</span>
 
