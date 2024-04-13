@@ -19,6 +19,12 @@ output:
 ### Setup
 
 
+```{r}
+install.packages("ggpubr")
+```
+```{r}
+install.packages("ggcorrplot")
+```
 
 
 ```{r setup, include=FALSE}
@@ -196,15 +202,24 @@ To circle back and reinforce how the linear regression (line drawn through our s
   
   - What does this look like on scatter plot?
   
+```{r}
+library(plotly)
+```
+  
 ```{r, warning=FALSE, message=FALSE}
-ggplot(sdr_data, aes(x = goal_12_score, 
-                     y = goal_9_score)) +
+goal_3_and_6_plot <- ggplot(sdr_data, aes(x = goal_3_score, 
+                     y = goal_6_score, label = country)) +
   geom_point() +
   geom_smooth() +
   stat_cor() +
   theme_minimal() 
-
+goal_3_and_6_plot
 ```
+```{r}
+ggplotly(goal_3_and_6_plot)
+```
+
+Based on the graph and the correlation coefficient there is a positive correlation between sdg goals 3 and 6. Countries that have a high score for sdg 3 (good health and well being) are likely to also have a high score for sdg 6 (clean water and sanitation). I think this correlation exists because when countries struggle with clean water and sanitation this can lead to many different health issues. I did notice a few outliers on the graph, one of them being Malta which has a high sdg 3 score(91.2), but a relatively low sdg 6 score(48.7).
 
 ### <span style="color: red;">Challenge 1</span>
 
