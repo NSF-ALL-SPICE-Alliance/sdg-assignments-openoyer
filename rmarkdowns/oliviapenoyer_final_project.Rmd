@@ -1,0 +1,115 @@
+---
+title: "SDG Final Project"
+author: "Olivia Penoyer"
+date: "2024-05-03"
+output: html_document
+---
+
+Load in packages
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(here)
+library(janitor)
+library(plotly)
+library(rnaturalearth)
+library(leaflet)
+library(sf)
+library(vembedr)
+```
+
+Read in data
+```{r, message=FALSE}
+sdr_data <- read_csv(here("data/SDR-2023-Data.csv"))
+```
+
+Clean column names
+```{r, message=FALSE}
+sdr_data <- sdr_data%>%
+  clean_names()
+```
+
+### SDG 7 - Affordable and Clean Energy
+
+I am focusing on the story of SDG 7 and its global impact
+```{r, message=FALSE}
+world <- ne_countries(scale = "medium", returnclass = "sf")
+```
+
+```{r, message=FALSE}
+world <- world %>% 
+  select(name_long, iso_a3, geometry)
+```
+
+```{r, message=FALSE}
+colnames(sdr_data)[which(colnames(sdr_data) == "country_code_iso3")] <- "iso_a3"
+```
+
+```{r, message=FALSE}
+sdr_data_world_joined <- left_join(sdr_data, world, by = "iso_a3")
+```
+
+```{r, message=FALSE}
+sdr_data_world_joined <- st_as_sf(sdr_data_world_joined)
+```
+
+```{r, message=FALSE}
+sdr_data_world_joined <- st_transform(sdr_data_world_joined, "+proj=longlat +datum=WGS84")
+```
+
+```{r, message=FALSE}
+mytext <- paste(
+    "Country: ", sdr_data_world_joined$country,"<br/>", 
+    "Goal 7 Score: ", round(sdr_data_world_joined$goal_7_score, 2), 
+    sep="") %>%
+  lapply(htmltools::HTML)
+
+leaflet(sdr_data_world_joined) %>% 
+  addTiles()  %>% 
+  setView( lat=10, lng=0 , zoom=2) %>%
+  addPolygons(stroke = FALSE, fillOpacity = 0.5, smoothFactor = 0.5, color = ~colorQuantile("Greens", goal_7_score)(goal_7_score), label = mytext)
+```
+
+I would like to start out by showing a global map of the SDG 7 scores. Countries' scores range from low to high based on the scale of light to dark green, respectively. Based on just looking at these scores overall I can see some trends. It seems that the area with the lowest SDG 7 scores is Africa. The area with the highest SDG 7 scores seems to be Europe with Latin America and North America following. These broader trends have already surprised me. I expected Europe to be leading far in front of North and Latin America, but they are relatively close. As we dive deeper into these scores and their indicators, we will see more specific relations between these areas and countries.
+
+```{r, message=FALSE}
+goal_7_histogram <- ggplot(sdr_data, aes(x = goal_7_score, fill=regions_used_for_the_sdr)) +
+  geom_histogram() +
+  theme_minimal() +
+  scale_fill_viridis_d() +
+  labs(title = "Distributions of SDG 7 Scores",
+       x = "SDG 7 Score",
+       y = "Number of Countries",
+       fill = "Region")
+
+ggplotly(goal_7_histogram)
+```
+
+Now I am showing a histogram of the SDG 7 scores for each region. This way we can look more specifically at the scores, not just based on what the map seems to point to. Looking at this graph we can confirm that Sub-Saharan Africa does have the lowest SDG 7 scores out of all the regions. But, we can also see that Latin America and Europe may be closer in scores than it seems on the map. It is important to note that the regions here are not the same as the continents. The OECD region includes a majority of European countries besides the eastern ones has the highest scores with Latin America right behind.
+
+```{r, message=FALSE}
+oecd_sdr_data <- sdr_data %>% 
+  filter(regions_used_for_the_sdr == "OECD")
+```
+```{r, message=FALSE}
+ggplot(oecd_sdr_data, aes(x= goal_7_score, y = country)) +
+  geom_bar(stat = "identity") +
+  labs(title = "OECD Region Goal 7 Scores", x= "Goal 7 Score", y= "Country") +
+  theme(axis.text.y = element_text(size = 5))
+```
+
+This bar graph shows each of the counties part of the OECD region and their goal 7 scores. This region had the highest scores compared to the others, so I am zooming in on this region. The OECD region is made up of countries that are known to have a developed economy. We can see overall they have relatively high scores. Every country has a score over 50 and majority over 60. Compared to the scores of other regions these are very high. Iceland has the highest score in this region and in the world. Now we will look at the indicators through the lens of Iceland.
+
+```{r, message=FALSE}
+goal_7_scatterplot <- ggplot(data = sdr_data, aes(x= population_with_access_to_electricity_percent, y = renewable_energy_share_in_total_final_energy_consumption_percent, color = regions_used_for_the_sdr)) +
+  geom_point()+
+  theme_minimal()+
+  scale_fill_viridis_d()+
+  labs(title = "Goal 7 Indicators",
+       x = "Access to Electricity",
+       y = "Renewable Energy Share in Total Energy Consumed",
+       fill = "Region")
+ggplotly(goal_7_scatterplot)
+```
+
+This scatterplot shows the relation between two indicators of SDG 7. The indicators I am focusing on are the percent of populations with access to electricity and the percent of total energy consumed by a population being renewable. These indicators represent how a country's economy and ability to access electricity relates to their renewable energy consumption. You can see that almost every country in the OECD has 100% access to electricity, but do not consume 100% renewable energy. Wealthier countries with a very large access to electricity are not able to achieve 100% renewable energy with some having very low levels, but some Sub-Saharan African countries have very little access to electricity, but are still able to have a good portion be renewable. With little access to electricity and a developing economy, a country can start with more renewable energy options opposed to having dirty fuel options and trying to convert to clean.
